@@ -22,9 +22,9 @@ def print_history():
 def add_history(role, content):
     st.session_state["messages"].append(ChatMessage(role=role, content=content))
 
-# 체인을 생성합니다. (ChatOpenAI 부붙에 agent를 추가해주면 agent사용가능)
-def create_chain(prompt, model):
-    chain = prompt | ChatOpenAI(model_name=model) | StrOutputParser()
+# 체인을 생성합니다. (temperature 추가)
+def create_chain(prompt, model, temperature):
+    chain = prompt | ChatOpenAI(model_name=model, temperature=temperature) | StrOutputParser()
     return chain
 
 
@@ -34,6 +34,16 @@ with st.sidebar:
     # 모델 선택 
     model_options = ["gpt-3.5-turbo", "gpt-4o-mini",]
     selected_model = st.selectbox("모델 선택", model_options, key="model_select")
+
+    # Temperature 슬라이더 추가
+    temperature = st.slider(
+        "응답의 다양성 조절 (Temperature)", 
+        min_value=0.0, 
+        max_value=1.0, 
+        value=0.7, 
+        step=0.1, 
+        key="temperature"
+    )
 
     # 프롬프트 선택
     tab1, tab2 = st.tabs(["프롬프트 정의", "프리셋"])
@@ -46,7 +56,7 @@ with st.sidebar:
         tab1.markdown(f"✅ 프롬프트가 적용되었습니다")
         prompt_template = user_text_prompt + "\n\n#Question:\n{question}\n\n#Answer:"
         prompt = PromptTemplate.from_template(prompt_template)
-        st.session_state["chain"] = create_chain(prompt, selected_model)  # 모델 선택 반영
+        st.session_state["chain"] = create_chain(prompt, selected_model, temperature)  # Temperature 반영
 
     # 개발자가 지정해둔 프롬프트를 적용한 경우
     user_selected_prompt = tab2.selectbox("프리셋 선택", ["친절한지인", "갑상선암전문의"])
@@ -54,7 +64,7 @@ with st.sidebar:
     if user_selected_apply_btn:
         tab2.markdown(f"✅ 프롬프트가 적용되었습니다")
         prompt = load_prompt(f"prompts/{user_selected_prompt}.yaml", encoding="utf8")
-        st.session_state["chain"] = create_chain(prompt, selected_model)  # 모델 선택 반영
+        st.session_state["chain"] = create_chain(prompt, selected_model, temperature)  # Temperature 반영
 
 # 대화내용 초기화 버튼을 누르면 대화내용 초기화 시킴
 if clear_btn:
@@ -66,7 +76,7 @@ if "chain" not in st.session_state:
     # user_prompt
     prompt_template = user_text_prompt + "\n\n#Question:\n{question}\n\n#Answer:"
     prompt = PromptTemplate.from_template(prompt_template)
-    st.session_state["chain"] = create_chain(prompt, selected_model)  # 모델 선택 반영
+    st.session_state["chain"] = create_chain(prompt, selected_model, temperature)  # Temperature 반영
 
 
 if user_input := st.chat_input():
