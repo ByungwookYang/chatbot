@@ -1,0 +1,22 @@
+name: thyroid_cancer_chatbot
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - flask
+  - requests
+  - beautifulsoup4
+  - python-dotenv
+  - langchain-experimental
+  - pip:
+      - streamlit
+      - langchain>=0.0.304
+      - openai
+      - langchain-experimental
+      - tiktoken
+      - faiss-cpu
+      - langchain-openai
+      - langchain-community
+      - wikipedia
